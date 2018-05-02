@@ -2,9 +2,12 @@
   "name": "@tubitid/badge-scheme",
   "version": "1.0.0",
   "description": "Badge creating, reading related functions and badge protobuf schemes.",
-  "main": "index.js",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest",
+    "build": "tsc",
+    "lint": "tslint src/**/*.ts{,x} __tests__/**/*.ts{,x}"
   },
   "repository": {
     "type": "git",
