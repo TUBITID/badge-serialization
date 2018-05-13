@@ -28,7 +28,7 @@ export class BadgeSignature {
      * @param {number} bytesToStore how many bytes to store in the signed badge. max 64 bytes.
      * @return {Promise<Badge>}
      */
-    async sign(badge: Badge, bytesToStore: number = 64) : Promise<SignedBadge> {
+    sign = async (badge: Badge, bytesToStore: number = 64) : Promise<SignedBadge> => {
         const badgeBytes = badge.serializeBinary();
         const sign = hmacSignUint8Arr(badgeBytes, this.signSecret, bytesToStore);
         const signedBadge = new models.SignedBadge();
@@ -37,14 +37,14 @@ export class BadgeSignature {
         signedBadge.setBadge(badge);
 
         return signedBadge;
-    }
+    };
 
     /**
      * Given a signed badge instance, verifies its signature with the instance's secret.
      * @param {SignedBadge} signedBadge the signed badge to verify.
      * @return {Promise<Badge>} resolves the badge if the signature is true.
      */
-    async verify(signedBadge : SignedBadge) : Promise<Badge>{
+    verify = async (signedBadge : SignedBadge) : Promise<Badge> => {
         const signature = signedBadge.getSignature();
         const badgeBytes = signedBadge.getBadge().serializeBinary();
         const sign = hmacSignUint8Arr(badgeBytes, this.signSecret, signature.length);
@@ -52,7 +52,7 @@ export class BadgeSignature {
         if(sign.toString() !== signature.toString())
             throw new Error('could not verify signatures. the signature does not match the stored badge.');
         return signedBadge.getBadge();
-    }
+    };
 }
 
 export default BadgeSignature;
