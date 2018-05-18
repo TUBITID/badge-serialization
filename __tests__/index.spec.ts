@@ -1,6 +1,6 @@
 import { createBase64String, createBase64Reader, StudentMetadata, Department } from '../src';
 import { Message } from 'google-protobuf';
-import { StudentMetaData } from "../src/models/tubitid-badge_pb";
+import { StudentMetaData } from '@tubitid/badge-scheme/lib/proto/badge';
 
 describe('index spec', () => {
     const __TEST_DATA__ = {

@@ -1,6 +1,6 @@
-import { Badge, SignedBadge } from '../lib/models/tubitid-badge_pb';
+import { Badge, SignedBadge } from '@tubitid/badge-scheme/lib/proto/badge';
 import { HmacSHA512, lib, enc, LibWordArray } from 'crypto-js';
-const models = require('./models/tubitid-badge_pb');
+const models = require('@tubitid/badge-scheme/lib/proto/badge');
 
 /**
  * Given an uint8array and a secret, calculates and returns a truncated hmac-sha512 signature.

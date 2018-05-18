@@ -1,7 +1,7 @@
 import { Message } from 'google-protobuf';
 import { Buffer } from 'buffer/';
-import { SignedBadge as SB } from "../lib/models/tubitid-badge_pb";
-const models = require('./models/tubitid-badge_pb');
+import { SignedBadge as SB } from "@tubitid/badge-scheme/lib/proto/badge";
+const models = require( '@tubitid/badge-scheme/lib/proto/badge');
 
 export const Department = models.Department;
 export const StudentMetadata = models.StudentMetaData;
