@@ -45,9 +45,9 @@
     "@types/crypto-js": "^3.1.39",
     "@types/google-protobuf": "^3.2.7",
     "@types/jest": "^22.2.3",
-    "@types/node": "^10.0.3",
+    "@types/node": "^10.1.1",
     "jest": "^22.4.3",
-    "tslint": "^5.9.1",
+    "tslint": "^5.10.0",
     "typescript": "^2.8.3"
   },
   "dependencies": {
