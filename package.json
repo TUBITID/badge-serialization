@@ -5,10 +5,8 @@
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
-    "protoc": "./protoc-ts-generate.sh",
-    "test": "npm run protoc && jest",
-    "copy-models": "mkdir -p ./lib/models && cp -rf ./src/models/* ./lib/models",
-    "build": "npm run protoc && npm run copy-models && tsc",
+    "test": "jest",
+    "build": "tsc",
     "lint": "tslint src/**/*.ts{,x} __tests__/**/*.ts{,x}"
   },
   "repository": {
