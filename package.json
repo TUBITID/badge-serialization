@@ -1,5 +1,5 @@
 {
-  "name": "@tubitid/badge-scheme",
+  "name": "@tubitid/badge-serialization",
   "version": "1.0.0",
   "description": "Badge creating, reading related functions and badge protobuf schemes.",
   "main": "lib/index.js",
@@ -13,7 +13,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/TUBITID/badge-scheme.git"
+    "url": "git+https://github.com/TUBITID/badge-serialization.git"
   },
   "keywords": [
     "qr",
@@ -24,7 +24,7 @@
   "author": "Yengas",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/TUBITID/badge-scheme/issues"
+    "url": "https://github.com/TUBITID/badge-serialization/issues"
   },
   "jest": {
     "moduleFileExtensions": [
@@ -42,7 +42,7 @@
       "**/__tests__/*.spec.ts"
     ]
   },
-  "homepage": "https://github.com/TUBITID/badge-scheme#readme",
+  "homepage": "https://github.com/TUBITID/badge-serialization#readme",
   "devDependencies": {
     "@types/crypto-js": "^3.1.39",
     "@types/google-protobuf": "^3.2.7",
