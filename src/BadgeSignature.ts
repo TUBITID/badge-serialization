@@ -17,7 +17,7 @@ function hmacSignUint8Arr(bytes : Uint8Array, secret : string, bytesToReturn : n
 }
 
 export class BadgeSignature {
-    constructor(private readonly signSecret?: string){}
+    constructor(private readonly signSecret: string){}
 
     /**
      * Signs the given uint8arr with the instance's secret.
@@ -31,7 +31,11 @@ export class BadgeSignature {
             throw new Error('signature size should be between 1 and 64');
         const sign = hmacSignUint8Arr(uint8Arr, this.signSecret, bytesToStore);
 
-        return Uint8Array.from([sign.length, ...sign, ...uint8Arr]);
+        const result = new Uint8Array(1 + sign.length + uint8Arr.length);
+        result.set([sign.length], 0);
+        result.set(sign, 1);
+        result.set(uint8Arr, 1 + sign.length);
+        return result;
     };
 
     /**

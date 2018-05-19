@@ -1,10 +1,11 @@
-import Buffer from 'buffer/';
+import { Buffer } from 'buffer/';
 import BadgeSignature from '../src/BadgeSignature';
 
 describe('BadgeSignature spec', () => {
     const __TEST_DATA__ = [
         { data: Uint8Array.from([1]), signed: Uint8Array.from([8, 141, 22, 41, 119, 219, 63, 121, 243, 1]) },
         { data: Uint8Array.from([1, 2, 3]), signed: Uint8Array.from([3, 172, 81, 211, 1, 2, 3]) },
+        { data: Buffer.from([1, 2, 3]), signed: Uint8Array.from([3, 172, 81, 211, 1, 2, 3]) }
     ];
     const bSignature = new BadgeSignature('test-signature');
 
