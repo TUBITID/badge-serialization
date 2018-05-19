@@ -1,23 +1,11 @@
-import { Message } from 'google-protobuf';
 import { Buffer } from 'buffer/';
-import { SignedBadge as SB } from "@tubitid/badge-scheme/lib/proto/badge";
-const models = require( '@tubitid/badge-scheme/lib/proto/badge');
 
-export const Department = models.Department;
-export const StudentMetadata = models.StudentMetaData;
-export const FacebookMetaData = models.FacebookMetaData;
-export const Badge = models.Badge;
-export const SignedBadge = models.SignedBadge;
 export * from './BadgeSignature';
 
-export function createBase64String<T extends Message>(message: T) : string {
-    return new Buffer(message.serializeBinary()).toString('base64');
+export function uint8ArrayToBase64String(uint8Arr: Uint8Array) : string {
+    return new Buffer(uint8Arr).toString('base64');
 }
 
-export function createBase64Reader<T extends Message>(model: { deserializeBinary(bytes: Uint8Array): T; }) : (str: string) => T {
-    return function(base64Str: string){
-        return model.deserializeBinary(Uint8Array.from(Buffer.from(base64Str, 'base64')));
-    };
+export function base64StringToUint8Array(base64Str: string){
+    return Uint8Array.from(Buffer.from(base64Str, 'base64'));
 }
-
-export const readSignedBadgeBase64String : (str) => SB = createBase64Reader(models.SignedBadge);

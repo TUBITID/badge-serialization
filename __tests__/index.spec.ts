@@ -1,6 +1,5 @@
-import { createBase64String, createBase64Reader, StudentMetadata, Department } from '../src';
-import { Message } from 'google-protobuf';
-import { StudentMetaData } from '@tubitid/badge-scheme/lib/proto/badge';
+import { uint8ArrayToBase64String, base64StringToUint8Array } from '../src';
+import { StudentMetaData, Department } from '@tubitid/badge-scheme';
 
 describe('index spec', () => {
     const __TEST_DATA__ = {
@@ -9,38 +8,33 @@ describe('index spec', () => {
         ]
     };
 
-    function createStudentMeta({ no, department, grade }) : StudentMetaData {
-        const studentMeta = new StudentMetadata();
-        studentMeta.setNo(no);
-        studentMeta.setDepartment(department);
-        studentMeta.setGrade(grade);
-
-        return studentMeta;
+    function createStudentMeta(obj) : Uint8Array {
+        return Uint8Array.from([...StudentMetaData.encode(StudentMetaData.fromObject(obj)).finish()]);
     }
 
     function verifyStudentMeta({ no, department, grade }, studentMeta : StudentMetaData) : void {
-        expect(studentMeta.getNo()).toEqual(no);
-        expect(studentMeta.getDepartment()).toEqual(department);
-        expect(studentMeta.getGrade()).toEqual(grade);
+        expect(studentMeta.no).toEqual(no);
+        expect(studentMeta.department).toEqual(department);
+        expect(studentMeta.grade).toEqual(grade);
     }
 
-    function createBase64Test<T extends Message>(dataArr: { data: object, base64: string }[], creator : (o: object) => T){
+    function createBase64Test(dataArr: { data: object, base64: string }[], creator : (o: object) => Uint8Array){
         return function() {
             for (let testCase of dataArr) {
                 const message = creator(testCase.data);
-                expect(createBase64String(message)).toEqual(testCase.base64);
+                expect(uint8ArrayToBase64String(message)).toEqual(testCase.base64);
             }
         };
     }
 
-    function readBase64Test<T extends Message>(
+    function readBase64Test<T>(
         dataArr: { data: object, base64: string }[],
-        reader: (s: string) => T,
+        reader: (s: Uint8Array) => T,
         verifier: (o: object, d: T) => void
     ){
         return function() {
             for (let testCase of dataArr) {
-                const message = reader(testCase.base64);
+                const message = reader(base64StringToUint8Array(testCase.base64));
                 verifier(testCase.data, message);
             }
         };
@@ -57,7 +51,7 @@ describe('index spec', () => {
     describe('reaed base64 string for models', () => {
         it(
             'should read student metadata base64 correctly',
-            readBase64Test(__TEST_DATA__.studentMeta, createBase64Reader(StudentMetaData), verifyStudentMeta)
+            readBase64Test<StudentMetaData>(__TEST_DATA__.studentMeta, StudentMetaData.decode, verifyStudentMeta)
         );
     });
 });
