@@ -5,7 +5,7 @@ export enum EncryptionAlgorithm{
     AES = 0,
     TripleDES = 1,
 }
-//const options = { padding: pad.ZeroPadding, mode: mode.CBC };
+
 const options = {
     [EncryptionAlgorithm.TripleDES]: {
         algo: TripleDES,
@@ -24,6 +24,11 @@ export class BadgeEncrypt {
     private algo: Cipher;
     private formatter : BinaryFormatter;
 
+    /**
+     * Creates and instance of badge encryptor.
+     * @param {string} encryptionKey the encryption key to use.
+     * @param {EncryptionAlgorithm} encryptionAlgorithm the algorithm to use.
+     */
     constructor(
         private readonly encryptionKey: string,
         private readonly encryptionAlgorithm: EncryptionAlgorithm = EncryptionAlgorithm.AES,
@@ -34,6 +39,12 @@ export class BadgeEncrypt {
         this.formatter = new BinaryFormatter(o.sizes);
     }
 
+    /**
+     * Encrypts the given Uint8Array with the instance's secret and returns an array
+     * with salt, iv and the ciphertext concatenated together.
+     * @param {Uint8Array} uint8Arr the bytes to encrypt
+     * @return {Promise<string>}
+     */
     encrypt = async (uint8Arr: Uint8Array) => {
         const wordArr = lib.WordArray.create(uint8Arr);
 
@@ -45,6 +56,11 @@ export class BadgeEncrypt {
         ).toString(this.formatter);
     };
 
+    /**
+     * Decrypts the given iv, salt and ciphertext pair and returns the decoded bytes.
+     * @param {Uint8Array} uint8Arr the array that contains salt, iv and ciphertext.
+     * @return {Promise<Uint8Array>}
+     */
     decrypt = async (uint8Arr: Uint8Array) => {
         const cipherParams = this.formatter.parse(uint8Arr);
 
