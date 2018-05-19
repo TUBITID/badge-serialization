@@ -1,4 +1,5 @@
 import { HmacSHA512, lib, enc, LibWordArray } from 'crypto-js';
+import { wordArrayToUint8Array } from './utils';
 
 /**
  * Given an uint8array and a secret, calculates and returns a truncated hmac-sha512 signature.
@@ -7,13 +8,11 @@ import { HmacSHA512, lib, enc, LibWordArray } from 'crypto-js';
  * @param {number} bytesToReturn how many bytes to return from the hmac signature.
  * @return {Promise<Array<number>>}
  */
-function hmacSignUint8Arr(bytes : Uint8Array, secret : string, bytesToReturn : number) : Array<number> {
+function hmacSignUint8Arr(bytes : Uint8Array, secret : string, bytesToReturn : number) : Uint8Array {
     const libWordArr = lib.WordArray.create(bytes);
     const sign : LibWordArray = <any> HmacSHA512(libWordArr, secret);
 
-    return Array.from(
-        enc.Latin1.stringify(sign).substring(0, bytesToReturn)
-    ).map(x => x.charCodeAt(0));
+    return wordArrayToUint8Array(sign, bytesToReturn);
 }
 
 export class BadgeSignature {
