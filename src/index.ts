@@ -1,5 +1,6 @@
 import { Buffer } from 'buffer/';
 
+export * from './BadgeEncrypt';
 export * from './BadgeSignature';
 
 export function uint8ArrayToBase64String(uint8Arr: Uint8Array) : string {
