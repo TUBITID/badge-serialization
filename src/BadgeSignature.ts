@@ -27,7 +27,9 @@ export class BadgeSignature {
      * @return {Promise<Badge>}
      */
     sign = async (uint8Arr: Uint8Array, bytesToStore: number = 64) : Promise<Uint8Array> => {
-        const sign = hmacSignUint8Arr(uint8Arr, this.signSecret, Math.max(1, Math.min(bytesToStore, 64)));
+        if(bytesToStore < 1 || bytesToStore > 64)
+            throw new Error('signature size should be between 1 and 64');
+        const sign = hmacSignUint8Arr(uint8Arr, this.signSecret, bytesToStore);
 
         return Uint8Array.from([sign.length, ...sign, ...uint8Arr]);
     };
@@ -47,7 +49,7 @@ export class BadgeSignature {
 
         if(sign.toString() !== signedBytes.slice(1, signatureLength + 1).toString())
             throw new Error('could not verify signatures. the signature does not match the stored badge.');
-        return badgeBytes;
+        return Uint8Array.from(badgeBytes);
     };
 }
 
