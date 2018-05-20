@@ -1,21 +1,26 @@
 import { uint8ArrayToBase64String, base64StringToUint8Array } from '../src';
-import { StudentMetaData, Department } from '@tubitid/badge-scheme/lib/proto/badge';
+import { Badge } from '@tubitid/badge-scheme/lib/proto/badge';
+const Long = require('long');
 
 describe('index spec', () => {
     const __TEST_DATA__ = {
-        studentMeta: [
-            { data: { no: 1152602008, department: Department.BTBS, grade: 3 }, base64: 'CJifzaUEEAEYAw==' },
+        badge: [
+            { data: { id: 1152602008, name: "Yiğitcan UÇUM", expires: 15151515 }, base64: 'CJifzaUEEg9ZacSfaXRjYW4gVcOHVU0Ym+OcBw==' },
         ]
     };
 
-    function createStudentMeta(obj) : Uint8Array {
-        return Uint8Array.from([...StudentMetaData.encode(StudentMetaData.fromObject(obj)).finish()]);
+    function createBadge(obj) : Uint8Array {
+        return Uint8Array.from([...Badge.encode(Badge.fromObject(obj)).finish()]);
     }
 
-    function verifyStudentMeta({ no, department, grade }, studentMeta : StudentMetaData) : void {
-        expect(studentMeta.no).toEqual(no);
-        expect(studentMeta.department).toEqual(department);
-        expect(studentMeta.grade).toEqual(grade);
+    function verifyBadge({ id, name, expires }, badge : Badge) : void {
+        expect(badge.id).toEqual(id);
+        expect(badge.name).toEqual(name);
+
+        if(badge.expires instanceof Long)
+            expect((<Long>badge.expires).toNumber()).toEqual(expires);
+        else
+            expect(badge.expires).toEqual(expires);
     }
 
     function createBase64Test(dataArr: { data: object, base64: string }[], creator : (o: object) => Uint8Array){
@@ -43,15 +48,15 @@ describe('index spec', () => {
 
     describe('create base64 strings for models', () => {
         it(
-            'should create student metadata base64 correctly',
-            createBase64Test(__TEST_DATA__.studentMeta, createStudentMeta)
+            'should create badge base64 correctly',
+            createBase64Test(__TEST_DATA__.badge, createBadge)
         );
     });
 
-    describe('reaed base64 string for models', () => {
+    describe('read base64 string for models', () => {
         it(
-            'should read student metadata base64 correctly',
-            readBase64Test<StudentMetaData>(__TEST_DATA__.studentMeta, StudentMetaData.decode, verifyStudentMeta)
+            'should read badge base64 correctly',
+            readBase64Test<Badge>(__TEST_DATA__.badge, Badge.decode, verifyBadge)
         );
     });
 });

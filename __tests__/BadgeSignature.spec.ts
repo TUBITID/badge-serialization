@@ -1,6 +1,6 @@
 import { Buffer } from 'buffer/';
 import BadgeSignature from '../src/BadgeSignature';
-import {ECDSACurve, ECDSASignatureFactory, HMACSignatureFactory} from "../src";
+import { ECDSACurve, ECDSASignatureFactory, HMACSignatureFactory } from "../src";
 
 describe('BadgeSignature spec', () => {
     const keys = {

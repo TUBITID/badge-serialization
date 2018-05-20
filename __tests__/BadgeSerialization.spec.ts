@@ -1,7 +1,8 @@
-import { StudentMetaData, FacebookMetaData, Department, Badge } from "@tubitid/badge-scheme/lib/proto/badge";
+import { Badge } from "@tubitid/badge-scheme/lib/proto/badge";
 import BadgeSerialization from '../src/BadgeSerialization';
 import { ECDSACurve, EncryptionAlgorithm } from '../src';
-import {randomBytes } from "./utils";
+import { randomBytes } from "./utils";
+const Long = require('long');
 
 describe('BadgeSerialization spec', () => {
     const serializers = {
@@ -69,6 +70,53 @@ describe('BadgeSerialization spec', () => {
                     const deserialized = await serializer.deserialize(serialized);
 
                     expect(deserialized).toEqual(data);
+                }
+            }
+        });
+    });
+
+    describe('serializing of proto schemes', () => {
+        const __BADGE_DATA__ = [
+            { data: { id: 1152602008, name: "Yiğitcan UÇUM" } },
+            { data: { id: 1152602041, name: "ABDÜLKADİR MUZAFFER AMİKLİOĞLU", expires: Date.now() } },
+        ];
+
+        function verifyBadge({ id, name, expires } : { id: number, name: string, expires?: number }, badge){
+            expect(badge.id).toEqual(id);
+            expect(badge.name).toEqual(name);
+
+            if(expires)
+                expect(badge.expires instanceof Long ? badge.expires.toNumber() : badge.expires).toEqual(expires);
+        }
+
+        it('should serialize and deserialize badge data correctly with binary', async () => {
+            for(let key of keys){
+                for(let badgeCase of __BADGE_DATA__){
+                    const badge = Badge.fromObject(badgeCase.data);
+                    const binary = Badge.encode(badge).finish();
+                    const serializer = serializers[key];
+                    const serialized = await serializer.serializeBinary(binary);
+
+                    const deserialized = await serializer.deserializeBinary(serialized);
+                    const newBadge = Badge.decode(deserialized);
+
+                    verifyBadge(badgeCase.data, newBadge);
+                }
+            }
+        });
+
+        it('should serialize and deserialize badge data correctly with base64', async () => {
+            for(let key of keys){
+                for(let badgeCase of __BADGE_DATA__){
+                    const badge = Badge.fromObject(badgeCase.data);
+                    const binary = Badge.encode(badge).finish();
+                    const serializer = serializers[key];
+                    const serialized = await serializer.serialize(binary);
+
+                    const deserialized = await serializer.deserialize(serialized);
+                    const newBadge = Badge.decode(deserialized);
+
+                    verifyBadge(badgeCase.data, newBadge);
                 }
             }
         });
