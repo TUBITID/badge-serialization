@@ -1,7 +1,7 @@
 {
-  "name": "@tubitid/badge-serialization",
+  "name": "@tubitid/cryptbox",
   "version": "1.0.0",
-  "description": "Badge creating, reading related functions and badge protobuf schemes.",
+  "description": "Data encrypting and signing library with small sized data outputs.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
@@ -11,18 +11,20 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/TUBITID/badge-serialization.git"
+    "url": "git+https://github.com/TUBITID/cryptbox.git"
   },
   "keywords": [
-    "qr",
-    "code",
-    "protobuf",
+    "encrypt",
+    "sign",
+    "ecdsa",
+    "hmac",
+    "data",
     "typescript"
   ],
   "author": "Yengas",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/TUBITID/badge-serialization/issues"
+    "url": "https://github.com/TUBITID/cryptbox/issues"
   },
   "jest": {
     "moduleFileExtensions": [
@@ -40,7 +42,7 @@
       "**/__tests__/*.spec.ts"
     ]
   },
-  "homepage": "https://github.com/TUBITID/badge-serialization#readme",
+  "homepage": "https://github.com/TUBITID/cryptbox#readme",
   "devDependencies": {
     "@tubitid/badge-scheme": "0.0.2",
     "@types/crypto-js": "^3.1.39",

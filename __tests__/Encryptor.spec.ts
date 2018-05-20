@@ -1,18 +1,18 @@
-import {BadgeEncrypt, EncryptionAlgorithm, uint8ArrayToBase64String} from "../src";
+import { Encryptor, EncryptionAlgorithm, uint8ArrayToBase64String } from "../src";
 import { randomBytes } from './utils';
 
 
 describe('Badge Encrypt', () => {
-    const badgeEncrypt = new BadgeEncrypt('test', EncryptionAlgorithm.TripleDES);
+    const badgeEncrypt = new Encryptor('test', EncryptionAlgorithm.TripleDES);
     const encryptors = {
-        aes: new BadgeEncrypt('test', EncryptionAlgorithm.AES),
-        des3: new BadgeEncrypt('test', EncryptionAlgorithm.TripleDES),
+        aes: new Encryptor('test', EncryptionAlgorithm.AES),
+        des3: new Encryptor('test', EncryptionAlgorithm.TripleDES),
     };
 
     const __TEST_DATA__ = [
         /**
          * See the Triple DES algorithm appends maximum of 7 bytes to the data, where as AES adds 15.
-         * That is why the choice of encryption algorithm may affect the size of the generated badge.
+         * That is why the choice of encryption algorithm may affect the size of the generated data.
          * The default encryption algorithm to use is AES because of its size and security.
          */
         { data: Uint8Array.from([1, 2, 3]), encryptedLengths: { aes: 40, des3: 24 } },

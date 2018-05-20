@@ -19,13 +19,13 @@ const options = {
     },
 };
 
-export class BadgeEncrypt {
+export class Encryptor {
     private options: CipherOption;
     private algo: Cipher;
     private formatter : BinaryFormatter;
 
     /**
-     * Creates and instance of badge encryptor.
+     * Creates and instance of data encryptor.
      * @param {string} encryptionKey the encryption key to use.
      * @param {EncryptionAlgorithm} encryptionAlgorithm the algorithm to use.
      */
@@ -69,4 +69,4 @@ export class BadgeEncrypt {
     };
 }
 
-export default BadgeEncrypt;
+export default Encryptor;

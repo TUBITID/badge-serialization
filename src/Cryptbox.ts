@@ -1,9 +1,9 @@
-import {base64StringToUint8Array, uint8ArrayToBase64String} from "./utils";
+import {base64StringToUint8Array, uint8ArrayToBase64String} from './utils';
 import {
-    BadgeSignature, ECDSACurve, ECDSASignatureFactory, HMACSignatureFactory,
+    SignatureHandler, ECDSACurve, ECDSASignatureFactory, HMACSignatureFactory,
     SignatureFactory
-} from "./BadgeSignature";
-import { BadgeEncrypt, EncryptionAlgorithm } from "./BadgeEncrypt";
+} from './SignatureHandler';
+import { Encryptor, EncryptionAlgorithm } from './Encryptor';
 
 function uintArrOrBase64StrToBytes(bytes: Uint8Array | string) : Uint8Array {
     if(bytes instanceof Uint8Array)
@@ -13,7 +13,7 @@ function uintArrOrBase64StrToBytes(bytes: Uint8Array | string) : Uint8Array {
     return Uint8Array.from(bytes);
 }
 
-export class BadgeSerializationBuilder{
+export class CryptboxBuilder{
     private ecdsaOptions? : { curve: ECDSACurve, pubKey: Uint8Array, privKey?: Uint8Array };
     private hmacOptions? : { key: string, signatureSize: number };
     private encryptionOptions? : { key: string, algorithm: EncryptionAlgorithm };
@@ -21,24 +21,24 @@ export class BadgeSerializationBuilder{
     constructor(){}
 
     /**
-     * Initializes the BadgeSerialization with the given Encryption algorithm and the key.
-     * So the outputted badges will be encrypted.
+     * Initializes the Cryptbox with the given Encryption algorithm and the key.
+     * So the outputted bytes will be encrypted.
      * @param {string} key the key to use when doing the encryption
      * @param {EncryptionAlgorithm} algorithm the algorithm of the encryption.
      */
-    withEncryption = (key: string, algorithm: EncryptionAlgorithm) : BadgeSerializationBuilder => {
+    withEncryption = (key: string, algorithm: EncryptionAlgorithm) : CryptboxBuilder => {
         this.encryptionOptions = { key, algorithm };
         return this;
     };
 
     /**
-     * Initializes the BadgeSerialization instance with ecdsa signature signing.
+     * Initializes the Cryptbox instance with ecdsa signature signing.
      * Only one of the hmac or ecdsa signature can be used.
      * @param {ECDSACurve} curve the curve to use
      * @param {Uint8Array | string} pubKey the public key for the curve either as bytes or base64
      * @param {Uint8Array | string} privKey the private key for the curve either as bytes or base64
      */
-    withECDSASignature = (curve: ECDSACurve, pubKey: Uint8Array | string, privKey?: Uint8Array | string) : BadgeSerializationBuilder => {
+    withECDSASignature = (curve: ECDSACurve, pubKey: Uint8Array | string, privKey?: Uint8Array | string) : CryptboxBuilder => {
         this.ecdsaOptions = {
             curve,
             pubKey: uintArrOrBase64StrToBytes(pubKey),
@@ -50,12 +50,12 @@ export class BadgeSerializationBuilder{
     };
 
     /**
-     * Initializes the BadgeSerialization instance with hmac signature signing.
+     * Initializes the Cryptbox instance with hmac signature signing.
      * Only one of the hmac or ecdsa signature can be used.
      * @param {string} key the key to use when doing the signing and verifying.
      * @param {number} signatureSize the size of the signature
      */
-    withHMACSignature = (key: string, signatureSize: number = 64) : BadgeSerializationBuilder => {
+    withHMACSignature = (key: string, signatureSize: number = 64) : CryptboxBuilder => {
         this.hmacOptions = { key, signatureSize };
         this.ecdsaOptions = null;
 
@@ -63,20 +63,20 @@ export class BadgeSerializationBuilder{
     };
 
     /**
-     * Builds and returns an instance of BadgeSerialization, with the given
-     * @return {BadgeSerialization}
+     * Builds and returns an instance of Cryptbox, with the given
+     * @return {Cryptbox}
      */
-    build = () : BadgeSerialization => {
+    build = () : Cryptbox => {
         const signatureFactory : SignatureFactory
             = this.ecdsaOptions
                 ? new ECDSASignatureFactory(this.ecdsaOptions.curve, this.ecdsaOptions.pubKey, this.ecdsaOptions.privKey)
                 : this.hmacOptions ? new HMACSignatureFactory(this.hmacOptions.key) : null;
-        const signature = signatureFactory ? new BadgeSignature(signatureFactory) : null;
+        const signature = signatureFactory ? new SignatureHandler(signatureFactory) : null;
         const encrypt
             = this.encryptionOptions
-                ? new BadgeEncrypt(this.encryptionOptions.key, this.encryptionOptions.algorithm) : null;
+                ? new Encryptor(this.encryptionOptions.key, this.encryptionOptions.algorithm) : null;
 
-        return new BadgeSerialization(
+        return new Cryptbox(
             encrypt,
             signature,
             this.hmacOptions ? this.hmacOptions.signatureSize : 64
@@ -84,55 +84,55 @@ export class BadgeSerializationBuilder{
     };
 }
 
-export class BadgeSerialization {
+export class Cryptbox {
     constructor(
-        private readonly badgeEncryption?: BadgeEncrypt,
-        private readonly badgeSignature?: BadgeSignature,
+        private readonly encryptor?: Encryptor,
+        private readonly signatureHandler?: SignatureHandler,
         // wanted size of the signature, only works for hmac signatures.
         private readonly wantedSignatureSize?: number,
     ){}
 
     /**
-     * Given the badge bytes, applies necessary encryption and signature
+     * Given the data bytes, applies necessary encryption and signature
      * operations to it, and returns a base64 encoded representation of the final data.
-     * @param {Uint8Array} bytes the data to serialize
-     * @param {number} signatureSize the signature size in bytes default is the one defined when creating serialization class.
+     * @param {Uint8Array} bytes the data to protect
+     * @param {number} signatureSize the signature size in bytes default is the one defined when creating Cryptbox class.
      * only works for the hmac signatures.
      * @return {string} the base64 final data.
      */
-    serialize = async (bytes: Uint8Array, signatureSize: number = this.wantedSignatureSize) : Promise<string> => {
-        const result = await this.serializeBinary(bytes);
+    protect = async (bytes: Uint8Array, signatureSize: number = this.wantedSignatureSize) : Promise<string> => {
+        const result = await this.protectBinary(bytes);
 
         return uint8ArrayToBase64String(result);
     };
 
     /**
-     * Given the badge bytes, applies necessary encryption and signature
+     * Given the data bytes, applies necessary encryption and signature
      * operation to it, and returns the final data in an array of bytes
-     * @param {Uint8Array} bytes the data to serialize
-     * @param {number} signatureSize the signature size in bytes default is the one defined when creating serialization class.
+     * @param {Uint8Array} bytes the data to protect
+     * @param {number} signatureSize the signature size in bytes default is the one defined when creating Cryptbox class.
      * only works for the hmac signatures.
      * @return {Uint8Array} the resulting data
      */
-    serializeBinary = async (bytes: Uint8Array, signatureSize: number = this.wantedSignatureSize) : Promise<Uint8Array> => {
+    protectBinary = async (bytes: Uint8Array, signatureSize: number = this.wantedSignatureSize) : Promise<Uint8Array> => {
         let result = bytes;
 
-        if(this.badgeEncryption)
-            result = await this.badgeEncryption.encrypt(result);
-        if(this.badgeSignature)
-            result = await this.badgeSignature.sign(result, signatureSize);
+        if(this.encryptor)
+            result = await this.encryptor.encrypt(result);
+        if(this.signatureHandler)
+            result = await this.signatureHandler.sign(result, signatureSize);
 
         return result;
     };
 
     /**
-     * Given the badge bytes, applies the necessary encryption and signature operations reversed,
+     * Given the data bytes, applies the necessary encryption and signature operations reversed,
      * this means first checking the signature if there should be any, and then decrypting data, if decryption
      * is needed. The resulting bytes of data is the data cleaned from the signature and decrypted.
      * @param {Uint8Array} bytes the bytes of signed/encrypted data to process
      * @return {Promise<Uint8Array>} the resulting, cleaned bytes
      */
-    deserializeBinary = async (bytes: Uint8Array) : Promise<Uint8Array> => {
+    unprotectBinary = async (bytes: Uint8Array) : Promise<Uint8Array> => {
         return this.decrypt(await this.verify(bytes));
     };
 
@@ -143,8 +143,8 @@ export class BadgeSerialization {
      * @return {Promise<Uint8Array>}
      */
     verify = async (bytes: Uint8Array) : Promise<Uint8Array> => {
-        if(this.badgeSignature)
-            return this.badgeSignature.verify(bytes);
+        if(this.signatureHandler)
+            return this.signatureHandler.verify(bytes);
 
         return bytes;
     };
@@ -156,25 +156,25 @@ export class BadgeSerialization {
      * @return {Promise<Uint8Array>}
      */
     decrypt = async (bytes: Uint8Array) : Promise<Uint8Array> => {
-        if(this.badgeEncryption)
-            return this.badgeEncryption.decrypt(bytes);
+        if(this.encryptor)
+            return this.encryptor.decrypt(bytes);
         return bytes;
     };
 
     /**
-     * Given the badge bytes as base64 string, applies the necessary encryption and signature operations reversed,
+     * Given the data bytes as base64 string, applies the necessary encryption and signature operations reversed,
      * this means first checking the signature if there should be any, and then decrypting data, if decryption
      * is needed. The resulting bytes of data is the data cleaned from the signature and decrypted.
      * @param {string} base64Str the bytes of signed/encrypted data to process encoded in base64
      * @return {Promise<Uint8Array>} the resulting, cleaned bytes
      */
-    deserialize = async (base64Str: string) : Promise<Uint8Array> => {
-        return this.deserializeBinary(base64StringToUint8Array(base64Str));
+    unprotect = async (base64Str: string) : Promise<Uint8Array> => {
+        return this.unprotectBinary(base64StringToUint8Array(base64Str));
     };
 
     static builder(){
-        return new BadgeSerializationBuilder();
+        return new CryptboxBuilder();
     }
 }
 
-export default BadgeSerialization;
+export default Cryptbox;

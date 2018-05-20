@@ -126,7 +126,7 @@ export class ECDSASignatureFactory implements SignatureFactory {
 }
 
 
-export class BadgeSignature {
+export class SignatureHandler {
     //private signatureFactory : SignatureFactory;
 
     constructor(private readonly signatureFactory: SignatureFactory){}
@@ -149,9 +149,9 @@ export class BadgeSignature {
     };
 
     /**
-     * Given a signed badge instance, verifies its signature with the instance's secret.
-     * @param {Uint8Array} signedBytes the signed badge to verify.
-     * @return {Promise<Badge>} resolves the badge if the signature is true.
+     * Given a signed and boxed bytes, verifies its signature with the instance's secret.
+     * @param {Uint8Array} signedBytes the signed bytes to verify.
+     * @return {Promise<Badge>} resolves the data bytes if the signature is valid.
      */
     verify = async (signedBytes : Uint8Array) : Promise<Uint8Array> => {
         const signatureLength = signedBytes[0];
@@ -159,12 +159,12 @@ export class BadgeSignature {
         if(signatureLength >= signedBytes.length - 1)
             throw new Error('too big of a signature length for the given array.');
         const signature = signedBytes.slice(1, signatureLength + 1);
-        const badgeBytes = signedBytes.slice(signatureLength + 1);
+        const dataBytes = signedBytes.slice(signatureLength + 1);
 
-        if(this.signatureFactory.verify(badgeBytes, signature) !== true)
-            throw new Error('could not verify signatures. the signature does not match the stored badge.');
-        return Uint8Array.from(badgeBytes);
+        if(this.signatureFactory.verify(dataBytes, signature) !== true)
+            throw new Error('could not verify signatures. calculated signature does not match the stored signature.');
+        return Uint8Array.from(dataBytes);
     };
 }
 
-export default BadgeSignature;
+export default SignatureHandler;

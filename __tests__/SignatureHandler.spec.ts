@@ -1,8 +1,8 @@
 import { Buffer } from 'buffer/';
-import BadgeSignature from '../src/BadgeSignature';
+import SignatureHandler from '../src/SignatureHandler';
 import { ECDSACurve, ECDSASignatureFactory, HMACSignatureFactory } from "../src";
 
-describe('BadgeSignature spec', () => {
+describe('SignatureHandler spec', () => {
     const keys = {
         ed25519: {
             priv: new Buffer('DP5SS20yLZD6buZHX3VH4R6EXEcoNiFTQAvC8xdrfBQ=', 'base64'),
@@ -19,13 +19,13 @@ describe('BadgeSignature spec', () => {
     };
 
     const ecdsaSignatureFactory = new ECDSASignatureFactory(ECDSACurve.ed25519, keys.ed25519.pub, keys.ed25519.priv);
-    const ecdsaSignature = new BadgeSignature(ecdsaSignatureFactory);
+    const ecdsaSignature = new SignatureHandler(ecdsaSignatureFactory);
     const ecdsap192SignatureFactory = new ECDSASignatureFactory(ECDSACurve.p192, keys.p192.pub, keys.p192.priv);
-    const ecdsap192Signature = new BadgeSignature(ecdsap192SignatureFactory);
+    const ecdsap192Signature = new SignatureHandler(ecdsap192SignatureFactory);
     const ecdsaSecp256k1SignatureFactory = new ECDSASignatureFactory(ECDSACurve.SECP256K1, keys.secp256k1.pub, keys.secp256k1.priv);
-    const ecdsaSecp256k1Signature = new BadgeSignature(ecdsaSecp256k1SignatureFactory);
+    const ecdsaSecp256k1Signature = new SignatureHandler(ecdsaSecp256k1SignatureFactory);
     const hmacSignatureFactory = new HMACSignatureFactory('test-signature');
-    const hmacSignature = new BadgeSignature(hmacSignatureFactory);
+    const hmacSignature = new SignatureHandler(hmacSignatureFactory);
 
     const __TEST_DATA__ = {
         hmac: {
