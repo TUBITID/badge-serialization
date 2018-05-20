@@ -1,6 +1,5 @@
-import { Encryptor, EncryptionAlgorithm, uint8ArrayToBase64String } from "../src";
+import { EncryptionAlgorithm, Encryptor, uint8ArrayToBase64String } from '../src';
 import { randomBytes } from './utils';
-
 
 describe('Badge Encrypt', () => {
     const badgeEncrypt = new Encryptor('test', EncryptionAlgorithm.TripleDES);
@@ -32,15 +31,14 @@ describe('Badge Encrypt', () => {
 
     describe('encryption and decryption of data', () => {
         it('should encrypt and decrypt uint8array without any problems', async () => {
-            for(let testCase of __TEST_DATA__){
-                for(let key of Object.keys(testCase.encryptedLengths)) {
+            for(const testCase of __TEST_DATA__)
+                for(const key of Object.keys(testCase.encryptedLengths)) {
                     const encrypted = await encryptors[key].encrypt(testCase.data);
                     const decrypted = await encryptors[key].decrypt(encrypted);
 
                     expect(encrypted.length).toEqual(testCase.encryptedLengths[key]);
                     expect(decrypted).toEqual(testCase.data);
                 }
-            }
         });
     });
 });

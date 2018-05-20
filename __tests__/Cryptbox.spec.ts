@@ -1,6 +1,7 @@
-import Cryptbox from '../src/Cryptbox';
 import { ECDSACurve, EncryptionAlgorithm } from '../src';
-import { randomBytes } from "./utils";
+import Cryptbox from '../src/Cryptbox';
+import { randomBytes } from './utils';
+// tslint:disable
 const Long = require('long');
 
 describe('Cryptbox spec', () => {
@@ -50,8 +51,8 @@ describe('Cryptbox spec', () => {
 
     describe('boxing of binary data', () => {
         it('should protect binary data without problems', async () => {
-            for(let key of keys){
-                for(let testCase of __TEST_DATA__){
+            for(const key of keys){
+                for(const testCase of __TEST_DATA__){
                     // we can't test against aes/des encryption with random iv/salt so we pass those we don't have test for.
                     if(!testCase.boxed[key]) continue;
                     const boxed = await cryptboxes[key].protect(testCase.data);

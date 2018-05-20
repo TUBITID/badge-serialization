@@ -1,6 +1,7 @@
 import { Buffer } from 'buffer/';
+import { ECDSACurve, ECDSASignatureFactory, HMACSignatureFactory } from '../src';
 import SignatureHandler from '../src/SignatureHandler';
-import { ECDSACurve, ECDSASignatureFactory, HMACSignatureFactory } from "../src";
+// tslint:disable
 
 describe('SignatureHandler spec', () => {
     const keys = {
