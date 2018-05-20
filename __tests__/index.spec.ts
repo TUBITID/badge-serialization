@@ -1,5 +1,5 @@
 import { uint8ArrayToBase64String, base64StringToUint8Array } from '../src';
-import { StudentMetaData, Department } from '@tubitid/badge-scheme';
+import { StudentMetaData, Department } from '@tubitid/badge-scheme/lib/proto/badge';
 
 describe('index spec', () => {
     const __TEST_DATA__ = {

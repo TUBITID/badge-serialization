@@ -45,7 +45,7 @@ export class BadgeEncrypt {
      * @param {Uint8Array} uint8Arr the bytes to encrypt
      * @return {Promise<string>}
      */
-    encrypt = async (uint8Arr: Uint8Array) => {
+    encrypt = async (uint8Arr: Uint8Array) : Promise<Uint8Array> => {
         const wordArr = lib.WordArray.create(uint8Arr);
 
         return this.algo.encrypt(

@@ -27,9 +27,7 @@ export class BinaryFormatter{
     stringify = (cipherParams : any) : Uint8Array => {
         const ciphertext = cipherParams.ciphertext;
 
-        // will be 8 bytes
         const salt = cipherParams.salt;
-        // will be 16 bytes
         const iv = cipherParams.iv;
 
         // @ts-ignore
@@ -56,4 +54,12 @@ export class BinaryFormatter{
         // @ts-ignore
         return lib.CipherParams.create(params);
     };
+}
+
+export function uint8ArrayToBase64String(uint8Arr: Uint8Array) : string {
+    return new Buffer(uint8Arr).toString('base64');
+}
+
+export function base64StringToUint8Array(base64Str: string){
+    return Uint8Array.from(Buffer.from(base64Str, 'base64'));
 }
