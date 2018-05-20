@@ -1,3 +1,4 @@
+import { Buffer } from 'buffer/';
 import { LibWordArray, lib } from "crypto-js";
 
 export function wordArrayToUint8Array(wordArray: LibWordArray, bytes = -1) : Uint8Array {
