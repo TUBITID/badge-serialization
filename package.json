@@ -1,6 +1,6 @@
 {
   "name": "@tubitid/cryptbox",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Data encrypting and signing library with small sized data outputs.",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
