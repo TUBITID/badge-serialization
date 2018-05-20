@@ -1,7 +1,7 @@
-import { HmacSHA512, MD5, lib, enc, LibWordArray } from 'crypto-js';
-import { wordArrayToUint8Array } from './utils';
 import { Buffer } from 'buffer/';
+import { enc, HmacSHA512, lib, LibWordArray, MD5 } from 'crypto-js';
 import { ec as EC } from 'elliptic';
+import { wordArrayToUint8Array } from './utils';
 
 /**
  * Given an uint8array and a secret, calculates and returns a truncated hmac-sha512 signature.
@@ -10,59 +10,59 @@ import { ec as EC } from 'elliptic';
  * @param {number} bytesToReturn how many bytes to return from the hmac signature.
  * @return {Promise<Array<number>>}
  */
-function hmacSignUint8Arr(bytes : Uint8Array, secret : string, bytesToReturn : number) : Uint8Array {
+function hmacSignUint8Arr(bytes: Uint8Array, secret: string, bytesToReturn: number): Uint8Array {
     const libWordArr = lib.WordArray.create(bytes);
-    const sign : LibWordArray = <any> HmacSHA512(libWordArr, secret);
+    const sign: LibWordArray = HmacSHA512(libWordArr, secret) as any;
 
     return wordArrayToUint8Array(sign, bytesToReturn);
 }
 
-function md5Hex(bytes: Uint8Array) : string {
+function md5Hex(bytes: Uint8Array): string {
     return MD5(lib.WordArray.create(bytes)).toString(enc.Hex);
 }
 
-function uintToHex(uint8Arr: Uint8Array) : string {
+function uintToHex(uint8Arr: Uint8Array): string {
     return new Buffer(uint8Arr).toString('hex');
 }
 
-export interface SignatureFactory {
+export interface ISignatureFactory {
     /**
      * Sign the bytes and if possible truncate the signature.
      * @param {Uint8Array} bytes
      * @param {number} wantedSignatureLength
      * @return {Uint8Array}
      */
-    sign(bytes: Uint8Array, wantedSignatureLength: number) : Uint8Array
-    verify(bytes: Uint8Array, signature: Uint8Array) : boolean
+    sign(bytes: Uint8Array, wantedSignatureLength: number): Uint8Array;
+    verify(bytes: Uint8Array, signature: Uint8Array): boolean;
 }
 
-export class HMACSignatureFactory implements SignatureFactory {
-    constructor(private readonly signSecret: string){}
+export class HMACSignatureFactory implements ISignatureFactory {
+    constructor(private readonly signSecret: string) { }
 
-    sign = (bytes: Uint8Array, bytesToReturn: number): Uint8Array => {
+    public sign = (bytes: Uint8Array, bytesToReturn: number): Uint8Array => {
         if(bytesToReturn < 1 || bytesToReturn > 64)
             throw new Error('signature size should be between 1 and 64');
         if(bytesToReturn === 0) return Uint8Array.from([]);
 
         return hmacSignUint8Arr(bytes, this.signSecret, bytesToReturn);
-    };
+    }
 
-    verify = (bytes: Uint8Array, signature: Uint8Array): boolean => {
+    public verify = (bytes: Uint8Array, signature: Uint8Array): boolean => {
         const calculated = this.sign(bytes, signature.length);
         return calculated.toString() === signature.toString();
-    };
+    }
 }
 
 export enum ECDSACurve {
-    SECP256K1 = "secp256k1",
-    p192 = "p192",
-    p224 = "p224",
-    p256 = "p256",
-    p384 = "p384",
-    ed25519 = "ed25519",
+    SECP256K1 = 'secp256k1',
+    p192 = 'p192',
+    p224 = 'p224',
+    p256 = 'p256',
+    p384 = 'p384',
+    ed25519 = 'ed25519',
 }
 
-function createKeyPair(ec: any) : { priv: Uint8Array, pub: Uint8Array } {
+function createKeyPair(ec: any): { priv: Uint8Array, pub: Uint8Array } {
     // @ts-ignore
     const key = ec.genKeyPair({ entropy: wordArrayToUint8Array(lib.WordArray.random(32)) });
 
@@ -82,17 +82,17 @@ const signaturePartSize = {
     [ECDSACurve.ed25519]: 32,
 };
 
-export class ECDSASignatureFactory implements SignatureFactory {
-    private ec : any;
+export class ECDSASignatureFactory implements ISignatureFactory {
+    private ec: any;
     private partSize: number;
-    private pubKey : any;
-    private privKey? : any;
+    private pubKey: any;
+    private privKey?: any;
 
     constructor(
-        ecdsaCurve : ECDSACurve,
+        ecdsaCurve: ECDSACurve,
         signPublic: Uint8Array,
         signSecret?: Uint8Array,
-    ){
+    ) {
         this.ec = new EC(ecdsaCurve.toString());
         this.partSize = signaturePartSize[ecdsaCurve];
         // @ts-ignore
@@ -101,7 +101,7 @@ export class ECDSASignatureFactory implements SignatureFactory {
             this.privKey = this.ec.keyFromPrivate(uintToHex(signSecret), 'hex');
     }
 
-    sign(bytes: Uint8Array, wantedSignatureLength: number): Uint8Array {
+    public sign = (bytes: Uint8Array, wantedSignatureLength: number): Uint8Array => {
         if(!this.privKey)
             throw new Error('can not sign without secret key when using ecdsa');
         const hash = md5Hex(bytes);
@@ -110,11 +110,11 @@ export class ECDSASignatureFactory implements SignatureFactory {
 
         return Uint8Array.from(
             signature.r.toArray('be', this.partSize)
-                .concat(signature.s.toArray('be', this.partSize))
+                .concat(signature.s.toArray('be', this.partSize)),
         );
     }
 
-    verify(bytes: Uint8Array, signature: Uint8Array): boolean {
+    public verify = (bytes: Uint8Array, signature: Uint8Array): boolean => {
         const sigHex = uintToHex(signature);
         const halfSignature = sigHex.length / 2;
         const r = sigHex.substring(0, halfSignature);
@@ -125,11 +125,8 @@ export class ECDSASignatureFactory implements SignatureFactory {
     }
 }
 
-
 export class SignatureHandler {
-    //private signatureFactory : SignatureFactory;
-
-    constructor(private readonly signatureFactory: SignatureFactory){}
+    constructor(private readonly signatureFactory: ISignatureFactory) { }
 
     /**
      * Signs the given uint8arr with the instance's secret.
@@ -138,7 +135,7 @@ export class SignatureHandler {
      * @param {number} bytesToStore how many bytes to store in the signed data. max 64 bytes. min 1 bytes.
      * @return {Promise<Badge>}
      */
-    sign = async (uint8Arr: Uint8Array, bytesToStore: number = 64) : Promise<Uint8Array> => {
+    public sign = async (uint8Arr: Uint8Array, bytesToStore: number = 64): Promise<Uint8Array> => {
         const sign = this.signatureFactory.sign(uint8Arr, bytesToStore);
 
         const result = new Uint8Array(1 + sign.length + uint8Arr.length);
@@ -146,14 +143,14 @@ export class SignatureHandler {
         result.set(sign, 1);
         result.set(uint8Arr, 1 + sign.length);
         return result;
-    };
+    }
 
     /**
      * Given a signed and boxed bytes, verifies its signature with the instance's secret.
      * @param {Uint8Array} signedBytes the signed bytes to verify.
      * @return {Promise<Badge>} resolves the data bytes if the signature is valid.
      */
-    verify = async (signedBytes : Uint8Array) : Promise<Uint8Array> => {
+    public verify = async (signedBytes: Uint8Array): Promise<Uint8Array> => {
         const signatureLength = signedBytes[0];
         // there needs to be at least 1 byte of data after signature.
         if(signatureLength >= signedBytes.length - 1)
@@ -164,7 +161,7 @@ export class SignatureHandler {
         if(this.signatureFactory.verify(dataBytes, signature) !== true)
             throw new Error('could not verify signatures. calculated signature does not match the stored signature.');
         return Uint8Array.from(dataBytes);
-    };
+    }
 }
 
 export default SignatureHandler;

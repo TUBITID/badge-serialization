@@ -1,7 +1,7 @@
-import { AES, TripleDES, lib, mode, CipherOption, Cipher } from 'crypto-js';
+import { AES, Cipher, CipherOption, lib, mode, TripleDES } from 'crypto-js';
 import { BinaryFormatter, wordArrayToUint8Array } from './utils';
 
-export enum EncryptionAlgorithm{
+export enum EncryptionAlgorithm {
     AES = 0,
     TripleDES = 1,
 }
@@ -10,7 +10,7 @@ const options = {
     [EncryptionAlgorithm.TripleDES]: {
         algo: TripleDES,
         options: {},
-        sizes: { salt: 8, iv: 8, block: 8 }
+        sizes: { salt: 8, iv: 8, block: 8 },
     },
     [EncryptionAlgorithm.AES]: {
         algo: AES,
@@ -22,7 +22,7 @@ const options = {
 export class Encryptor {
     private options: CipherOption;
     private algo: Cipher;
-    private formatter : BinaryFormatter;
+    private formatter: BinaryFormatter;
 
     /**
      * Creates and instance of data encryptor.
@@ -32,7 +32,7 @@ export class Encryptor {
     constructor(
         private readonly encryptionKey: string,
         private readonly encryptionAlgorithm: EncryptionAlgorithm = EncryptionAlgorithm.AES,
-    ){
+    ) {
         const o = options[encryptionAlgorithm];
         this.options = o.options;
         this.algo = o.algo;
@@ -45,28 +45,28 @@ export class Encryptor {
      * @param {Uint8Array} uint8Arr the bytes to encrypt
      * @return {Promise<string>}
      */
-    encrypt = async (uint8Arr: Uint8Array) : Promise<Uint8Array> => {
+    public encrypt = async (uint8Arr: Uint8Array): Promise<Uint8Array> => {
         const wordArr = lib.WordArray.create(uint8Arr);
 
         return this.algo.encrypt(
             // @ts-ignore
             wordArr,
             this.encryptionKey,
-            this.options
+            this.options,
         ).toString(this.formatter);
-    };
+    }
 
     /**
      * Decrypts the given iv, salt and ciphertext pair and returns the decoded bytes.
      * @param {Uint8Array} uint8Arr the array that contains salt, iv and ciphertext.
      * @return {Promise<Uint8Array>}
      */
-    decrypt = async (uint8Arr: Uint8Array) => {
+    public decrypt = async (uint8Arr: Uint8Array) => {
         const cipherParams = this.formatter.parse(uint8Arr);
 
         // @ts-ignore
         return wordArrayToUint8Array(this.algo.decrypt(cipherParams, this.encryptionKey, this.options));
-    };
+    }
 }
 
 export default Encryptor;
