@@ -1,4 +1,3 @@
-import { Badge } from "@tubitid/badge-scheme/lib/proto/badge";
 import Cryptbox from '../src/Cryptbox';
 import { ECDSACurve, EncryptionAlgorithm } from '../src';
 import { randomBytes } from "./utils";
@@ -70,53 +69,6 @@ describe('Cryptbox spec', () => {
                     const unboxed = await cryptbox.unprotect(boxed);
 
                     expect(unboxed).toEqual(data);
-                }
-            }
-        });
-    });
-
-    describe('boxing of proto schemes', () => {
-        const __BADGE_DATA__ = [
-            { data: { id: 1152602008, name: "Yiğitcan UÇUM" } },
-            { data: { id: 1152602041, name: "ABDÜLKADİR MUZAFFER AMİKLİOĞLU", expires: Date.now() } },
-        ];
-
-        function verifyBadge({ id, name, expires } : { id: number, name: string, expires?: number }, badge){
-            expect(badge.id).toEqual(id);
-            expect(badge.name).toEqual(name);
-
-            if(expires)
-                expect(badge.expires instanceof Long ? badge.expires.toNumber() : badge.expires).toEqual(expires);
-        }
-
-        it('should protect and unprotect badge data correctly with binary', async () => {
-            for(let key of keys){
-                for(let badgeCase of __BADGE_DATA__){
-                    const badge = Badge.fromObject(badgeCase.data);
-                    const binary = Badge.encode(badge).finish();
-                    const cryptbox : Cryptbox = cryptboxes[key];
-                    const boxed = await cryptbox.protectBinary(binary);
-
-                    const unboxed = await cryptbox.unprotectBinary(boxed);
-                    const newBadge = Badge.decode(unboxed);
-
-                    verifyBadge(badgeCase.data, newBadge);
-                }
-            }
-        });
-
-        it('should protect and unprotect badge data correctly with base64', async () => {
-            for(let key of keys){
-                for(let badgeCase of __BADGE_DATA__){
-                    const badge = Badge.fromObject(badgeCase.data);
-                    const binary = Badge.encode(badge).finish();
-                    const cryptbox : Cryptbox = cryptboxes[key];
-                    const boxed = await cryptbox.protect(binary);
-
-                    const unboxed = await cryptbox.unprotect(boxed);
-                    const newBadge = Badge.decode(unboxed);
-
-                    verifyBadge(badgeCase.data, newBadge);
                 }
             }
         });
